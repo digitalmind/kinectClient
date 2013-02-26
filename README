@@ -1,0 +1,8 @@
+Kinect Client for my thesis
+It is based on the excellent PKinect library
+It utilises oscP5 to send the tracked skeleton data to other applications.
+
+Libraries Required
+- PKinect
+- OscP5
+- ControlP5

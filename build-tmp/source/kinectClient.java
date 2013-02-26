@@ -1,8 +1,30 @@
-import pKinect.PKinect;
-import pKinect.SkeletonData;
-import oscP5.*;
-import netP5.*;
-import controlP5.*;
+import processing.core.*; 
+import processing.data.*; 
+import processing.event.*; 
+import processing.opengl.*; 
+
+import pKinect.PKinect; 
+import pKinect.SkeletonData; 
+import oscP5.*; 
+import netP5.*; 
+import controlP5.*; 
+
+import java.util.HashMap; 
+import java.util.ArrayList; 
+import java.io.File; 
+import java.io.BufferedReader; 
+import java.io.PrintWriter; 
+import java.io.InputStream; 
+import java.io.OutputStream; 
+import java.io.IOException; 
+
+public class kinectClient extends PApplet {
+
+
+
+
+
+
 
 PKinect kinect;
 PFont font;
@@ -27,7 +49,7 @@ boolean tglLeftKnee;
 boolean tglRightFoot;
 boolean tglLeftFoot;
 
-void setup()
+public void setup()
 {
 	size(1280,480,P3D);
 	
@@ -40,7 +62,7 @@ void setup()
 	textFont(font, 14);
 }
 
-void draw()
+public void draw()
 {
 
 	frame.setTitle("FPS: "+(int)frameRate);
@@ -55,7 +77,7 @@ void draw()
   
 }
 
-void initGui()
+public void initGui()
 {
   ctrl = new ControlP5(this);
   Toggle head = ctrl.addToggle("tglHead",960,30, 15,15);
@@ -92,14 +114,14 @@ void initGui()
   rightFoot.setLabelVisible(false);
 }
 
-void drawPanelLines()
+public void drawPanelLines()
 {
   stroke(255,0,0);
   strokeWeight(3);
   line(968, 38, 968,98);
 }
 
-void drawPosition(SkeletonData _s) 
+public void drawPosition(SkeletonData _s) 
 {
   noStroke();
   fill(0, 100, 255);
@@ -107,7 +129,7 @@ void drawPosition(SkeletonData _s)
   text(s1, _s.position.x*width/2, _s.position.y*height/2);
 }
 
-void drawSkeleton(SkeletonData _s) 
+public void drawSkeleton(SkeletonData _s) 
 {
   // Body
   DrawBone(_s, 
@@ -186,7 +208,7 @@ void drawSkeleton(SkeletonData _s)
   PKinect.NUI_SKELETON_POSITION_FOOT_RIGHT);
 }
 
-void DrawBone(SkeletonData _s, int _j1, int _j2) 
+public void DrawBone(SkeletonData _s, int _j1, int _j2) 
 {
   noFill();
   strokeWeight(4);
@@ -200,7 +222,7 @@ void DrawBone(SkeletonData _s, int _j1, int _j2)
   }
 }
 
-void appearEvent(SkeletonData _s) 
+public void appearEvent(SkeletonData _s) 
 {
   if (_s.trackingState == PKinect.NUI_SKELETON_NOT_TRACKED) 
   {
@@ -211,7 +233,7 @@ void appearEvent(SkeletonData _s)
   }
 }
 
-void disappearEvent(SkeletonData _s) 
+public void disappearEvent(SkeletonData _s) 
 {
   println("and it's gone");
   synchronized(bodies) {
@@ -225,7 +247,7 @@ void disappearEvent(SkeletonData _s)
   }
 }
 
-void moveEvent(SkeletonData _b, SkeletonData _a) 
+public void moveEvent(SkeletonData _b, SkeletonData _a) 
 {
   if (_a.trackingState == PKinect.NUI_SKELETON_NOT_TRACKED) 
   {
@@ -239,6 +261,15 @@ void moveEvent(SkeletonData _b, SkeletonData _a)
         bodies.get(i).copy(_a);
         break;
       }
+    }
+  }
+}
+  static public void main(String[] passedArgs) {
+    String[] appletArgs = new String[] { "kinectClient" };
+    if (passedArgs != null) {
+      PApplet.main(concat(appletArgs, passedArgs));
+    } else {
+      PApplet.main(appletArgs);
     }
   }
 }
