@@ -84,7 +84,7 @@ public void initGui()
   Toggle neck = ctrl.addToggle("tglNeck",960,90, 15,15);
   Toggle leftShoulder = ctrl.addToggle("tglLeftShoulder", 900,90,15,15);
   Toggle rightShoulder = ctrl.addToggle("tglRightShoulder", 1020,90,15,15);
-  Toggle spine = ctrl.addToggle("tglSpine", 960, 160, 15,15);
+  Toggle spine = ctrl.addToggle("tglSpine", 960, 175, 15,15);
   Toggle leftElbow = ctrl.addToggle("tglLeftElbow",885, 180, 15,15);
   Toggle rightElbow = ctrl.addToggle("tglRightElbow",1035,180, 15,15);
   Toggle leftHand = ctrl.addToggle("tglLeftHand", 875, 260, 15, 15);
@@ -118,7 +118,23 @@ public void drawPanelLines()
 {
   stroke(255,0,0);
   strokeWeight(3);
-  line(968, 38, 968,98);
+  line(968, 45, 968,90);//Head to neck
+  line(915, 98, 960,98);//Left shoulder to neck
+  line(975,98,1020,98);//Neck to right shoulder
+  line(908, 105, 893,180);//Left shoulder to left elbow
+  line(893,195, 883,260);//Left elbow to left hand
+  line(1028,105, 1043,180);//Right shoulder to right elbow
+  line(1043,195,1053,260); //Right elbow to right hand
+  line(915,105,960,175);//Left shoulder to spine 
+  line(1020,105,975,175);//Right shoulder to spine
+  line(928, 250,960,190);//Left hip to spine
+  line(975,190, 1008,250);//Spine to right hip
+  line(935,258,1000,258);
+  line(928,265,913,360); //Left hip to left knee
+  line(1008,265,1023,360); //Right hip to right knee
+  line(913,375, 913,450);//Left knee to left foot
+  line(1023,375,1023,450); //Right knee to right foot
+
 }
 
 public void drawPosition(SkeletonData _s) 
