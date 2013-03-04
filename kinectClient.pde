@@ -3,12 +3,15 @@ import pKinect.SkeletonData;
 import oscP5.*;
 import netP5.*;
 import controlP5.*;
+import java.util.*;
 
 PKinect kinect;
 PFont font;
-ArrayList<SkeletonData> bodies;
 
+Vector<SkeletonData> bodies;
+OscP5 oscP5;
 NetAddress remoteIp;
+
 ControlP5 ctrl;
 
 boolean tglHead;
@@ -29,12 +32,12 @@ boolean tglLeftFoot;
 
 void setup()
 {
-	size(1280,480,P3D);
-	
+	size(1280,480,P3D);	
 	kinect = new PKinect(this);
-	bodies = new ArrayList<SkeletonData>();
+  bodies = new Vector<SkeletonData>();
 	smooth();
-	remoteIp = new NetAddress("127.0.0.1",12000);
+  oscP5 = new OscP5(this, 12000);
+	remoteIp = new NetAddress("127.0.0.1",12002);
   initGui();
 	font = loadFont("Consolas-14.vlw");
 	textFont(font, 14);
@@ -45,12 +48,15 @@ void draw()
 
 	frame.setTitle("FPS: "+(int)frameRate);
 	background(0);
-    drawPanelLines();
+  drawPanelLines();
 
 	image(kinect.GetDepth(), -10,0, 640,480);
-  for(SkeletonData s : bodies)
+  for(int i=0;i<bodies.size();i++)
   {
+    SkeletonData s = bodies.get(i);
     drawSkeleton(s); 
+    displayValues(s);
+    sendMessage(s, i);
   }
   
 }
@@ -114,6 +120,327 @@ void drawPanelLines()
   line(1023,375,1023,450); //Right knee to right foot
 
 }
+
+void displayValues(SkeletonData _s)
+{
+  PVector[] jLocs = new PVector[15];
+  
+  jLocs[0] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HEAD);
+  jLocs[1] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_SHOULDER_CENTER);
+  jLocs[2] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_SHOULDER_LEFT);
+  jLocs[3] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_SHOULDER_RIGHT);
+  jLocs[4] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_SPINE);
+  jLocs[5] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_ELBOW_LEFT);
+  jLocs[6] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_ELBOW_RIGHT);
+  jLocs[7] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HAND_LEFT);
+  jLocs[8] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HAND_RIGHT);
+  jLocs[9] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HIP_LEFT);
+  jLocs[10] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HIP_RIGHT);
+  jLocs[11] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_KNEE_LEFT);
+  jLocs[12] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_KNEE_RIGHT);
+  jLocs[13] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_FOOT_LEFT);
+  jLocs[14] = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_FOOT_RIGHT);
+
+  if(tglHead)
+  {
+    fill(200);
+    text("Head: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[0].z+"]", 650,10);
+  }
+  else
+  {
+    fill(80);
+    text("Head: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[0].z+"]", 650,10);
+  }
+
+  if(tglNeck)
+  {
+    fill(200);
+    text("Neck: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[1].z+"]", 650,25);
+  }
+  else
+  {
+    fill(80);
+    text("Neck: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[1].z+"]", 650,25);
+  }
+
+  if(tglLeftShoulder)
+  { 
+    fill(200);
+    text("L-Shoulder: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[2].z+"]", 650,40);
+  }
+  else
+  {
+    fill(80);
+    text("L-Shoulder: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[2].z+"]", 650,40);
+  }
+
+  if(tglRightShoulder)
+  {
+    fill(200);
+    text("R-Shoulder: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[3].z+"]", 650,55);
+  }
+  else
+  {
+    fill(80);
+    text("R-Shoulder: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[3].z+"]", 650,55);
+  }
+
+  if(tglLeftElbow)
+  {
+    fill(200);
+    text("L-Elbow: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[4].z+"]", 650,70);
+  }
+  else
+  {
+    fill(80);
+    text("L-Elbow: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[4].z+"]", 650,70);
+  }
+  if(tglRightElbow)
+  {
+    fill(200);
+    text("R-Elbow: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[5].z+"]", 650,85);
+  }
+  else
+  {
+    fill(80);
+    text("R-Elbow: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[5].z+"]", 650,85);
+  }
+
+  if(tglLeftHand)
+  {
+    fill(200);
+    text("L-Hand: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[6].z+"]", 650,100);
+  }
+  else
+  {
+    fill(80);
+    text("L-Hand: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[6].z+"]", 650,100);
+  }
+  if(tglRightHand)
+  {
+    fill(200);
+    text("R-Hand: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[7].z+"]", 650,115);
+  }
+  else
+  {
+    fill(80);
+    text("R-Hand: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[7].z+"]", 650,115);
+  }
+
+  if(tglSpine)
+  {
+    fill(200);
+    text("Spine: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[8].z+"]", 650,130);
+  }
+  else
+  {
+    fill(80);
+    text("Spine: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[8].z+"]", 650,130);
+  }
+  if(tglLeftHip)
+  {
+    fill(200);
+    text("L-Hip: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[9].z+"]", 650,145);
+  }
+  else
+  {
+    fill(80);
+    text("L-Hip: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[9].z+"]", 650,145);
+  }
+
+  if(tglRightHip)
+  {
+    fill(200);
+    text("R-Hip: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[10].z+"]", 650,160);
+  }
+  else
+  {
+    fill(80);
+    text("R-Hip: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[10].z+"]", 650,160);
+  }
+
+  if(tglLeftKnee)
+  {
+    fill(200);
+    text("L-Knee: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[11].z+"]", 650,175);
+  }
+  else
+  {
+    fill(80);
+    text("L-Knee: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[11].z+"]", 650,175);
+  }
+
+  if(tglRightKnee)
+  {
+    fill(200);
+    text("R-Knee: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[12].z+"]", 650,190);
+  }
+  else
+  {
+    fill(80);
+    text("R-Knee: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[12].z+"]", 650,190);
+  }
+
+  if(tglLeftFoot)
+  {
+    fill(200);
+    text("L-Foot: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[13].z+"]", 650,205);
+  }
+  else
+  {
+    fill(80);
+    text("L-Foot: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[13].z+"]", 650,205);
+  }
+
+  if(tglRightFoot)
+  {
+    fill(200);
+    text("R-Foot: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[14].z+"]", 650,220);
+  }
+  else
+  {
+    fill(80);
+    text("R-Foot: ["+jLocs[0].x*width/2+","+jLocs[0].y*height+","+jLocs[14].z+"]", 650,220);
+  }
+}
+
+void sendMessage(SkeletonData _s, int _index)
+{
+  if(tglHead)
+  {
+      OscMessage myMessage = new OscMessage("/head");
+      myMessage.add(_index);
+      PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HEAD);
+      myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+      oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglNeck)
+  {
+    OscMessage myMessage = new OscMessage("/neck");  
+    myMessage.add(_index);
+    PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_SHOULDER_CENTER);
+    myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+    oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglLeftShoulder)
+  {
+    OscMessage myMessage = new OscMessage("/lShoulder");
+    myMessage.add(_index);
+    PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_SHOULDER_LEFT);
+    myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+    oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglRightShoulder)
+  {
+    OscMessage myMessage = new OscMessage("/rShoulder");
+    myMessage.add(_index);
+    PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_SHOULDER_RIGHT);
+    myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+    oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglSpine){
+    OscMessage myMessage = new OscMessage("/spine");
+    myMessage.add(_index);
+    PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_SPINE);
+    myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+    oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglLeftElbow)
+  {
+    OscMessage myMessage = new OscMessage("/lElbow");
+    myMessage.add(_index);
+    PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_ELBOW_LEFT);
+    myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+    oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglRightElbow)
+  {
+    OscMessage myMessage = new OscMessage("/rElbow");
+    myMessage.add(_index);
+    PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_ELBOW_RIGHT);
+    myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+    oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglLeftHand)
+  {
+    OscMessage myMessage = new OscMessage("/lHand");
+    myMessage.add(_index);
+    PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HAND_LEFT);
+    myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+    oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglRightHand){
+    OscMessage myMessage = new OscMessage("/rHand");
+    myMessage.add(_index);
+    PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HAND_RIGHT);
+    myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+    oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglLeftHip)
+  {
+    OscMessage myMessage = new OscMessage("/lHip");
+    myMessage.add(_index);
+    PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HIP_LEFT);
+    myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+    oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglRightHip)
+  {
+      OscMessage myMessage = new OscMessage("/rHip");
+      myMessage.add(_index);
+      PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_HIP_RIGHT);
+      myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+      oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglLeftKnee)
+  { 
+      OscMessage myMessage = new OscMessage("/lKnee");
+      myMessage.add(_index);
+      PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_KNEE_RIGHT);
+      myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+      oscP5.send(myMessage, remoteIp); 
+    
+  }
+  if(tglRightKnee)
+  {
+      OscMessage myMessage = new OscMessage("/rKnee");
+      myMessage.add(_index);
+      PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_KNEE_RIGHT);
+      myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+      oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglLeftFoot)
+  {
+      OscMessage myMessage = new OscMessage("/lFoot");
+      myMessage.add(_index);
+      PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_FOOT_LEFT);
+      myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+      oscP5.send(myMessage, remoteIp); 
+
+  }
+  if(tglRightFoot)
+  {
+      OscMessage myMessage = new OscMessage("/rFoot");
+      myMessage.add(_index);
+      PVector jPos = getJointPosition(_s, PKinect.NUI_SKELETON_POSITION_FOOT_RIGHT);
+      myMessage.add(new float[] {jPos.x, jPos.y, jPos.z});
+      oscP5.send(myMessage, remoteIp); 
+  }
+
+}
+
 
 void drawPosition(SkeletonData _s) 
 {
@@ -201,6 +528,18 @@ void drawSkeleton(SkeletonData _s)
   PKinect.NUI_SKELETON_POSITION_ANKLE_RIGHT, 
   PKinect.NUI_SKELETON_POSITION_FOOT_RIGHT);
 }
+PVector getJointPosition(SkeletonData _s, int j)
+{
+  PVector pos;
+  if(_s.skeletonPositionTrackingState[j] != PKinect.NUI_SKELETON_POSITION_NOT_TRACKED)
+  {
+    pos = new PVector((float)_s.skeletonPositions[j].x,(float)_s.skeletonPositions[j].y,(float) _s.skeletonPositions[j].z);
+  }
+  else  {
+   pos = new PVector(-1.0f,-1.0f,-1.0f);
+  }
+  return pos;
+}
 
 void DrawBone(SkeletonData _s, int _j1, int _j2) 
 {
@@ -224,18 +563,21 @@ void appearEvent(SkeletonData _s)
   }
   synchronized(bodies) {
     bodies.add(_s);
+    println("Skeleton "+_s.dwTrackingID+" is added.");
   }
 }
 
 void disappearEvent(SkeletonData _s) 
 {
-  println("and it's gone");
-  synchronized(bodies) {
-    for (int i=bodies.size()-1; i>=0; i--) 
-    {
-      if (_s.dwTrackingID == bodies.get(i).dwTrackingID) 
+  println("and "+_s.dwTrackingID+" is gone");  
+  synchronized(bodies) 
+  {
+  for (int i=bodies.size()-1; i>=0; i--) 
+  {
+      if (_s.dwTrackingID == bodies.get(i).dwTrackingID || bodies.get(i).dwTrackingID == 0) 
       {
         bodies.remove(i);
+        println("body #"+_s.dwTrackingID+" is removed.");
       }
     }
   }
